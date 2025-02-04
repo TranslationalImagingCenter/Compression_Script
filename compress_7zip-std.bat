@@ -73,6 +73,16 @@ IF /I NOT "!USER_INPUT!"=="Y" (
     echo Script terminated by the user.
     exit /b
 )
+echo.
+echo You have chosen to proceed.
+echo This script will process all files in the folder where it is being run from, including all subfolders, by first compressing each uncompressed file individually, then verifying the integrity of the compressed version, and finally deleting the original uncompressed file only if the compression and verification steps are successful.
+echo.
+echo Are you sure you want to continue? This action cannot be undone. (Y/N)
+set /p "FINAL_CONFIRMATION=Your choice: "
+IF /I NOT "!FINAL_CONFIRMATION!"=="Y" (
+    echo Script terminated by the user.
+    exit /b
+)
 
 REM Recursively loop through all files in the current directory
 for /R "%SOURCE_DIR%" %%F in (*) do (

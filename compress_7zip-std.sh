@@ -46,6 +46,17 @@ if [[ "$USER_INPUT" != "Y" && "$USER_INPUT" != "y" ]]; then
     echo "Script terminated by the user."
     exit 0
 fi
+echo
+echo "You have chosen to proceed."
+echo "This script will process all files in the folder where it is being run from, including all subfolders, by first compressing each uncompressed file individually, then verifying the integrity of the compressed version, and finally deleting the original uncompressed file only if the compression and verification steps are successful."
+echo
+read -p "Would you like to continue? (Y/N): " USER_INPUT
+if [[ "$USER_INPUT" != "Y" && "$USER_INPUT" != "y" ]]; then
+    echo "Script terminated by the user."
+    exit 0
+fi
+
+
 
 # Recursively loop through all files
 find "$SOURCE_DIR" -type f | while read -r FILE; do
