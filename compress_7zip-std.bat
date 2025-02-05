@@ -1,5 +1,4 @@
 @echo off
-@echo off
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM Path to 7-Zip ZS executable
@@ -8,19 +7,24 @@ SET "7ZIP_PATH=C:\Program Files\7-Zip-Zstandard\7z.exe"
 REM Get the current directory
 SET "SOURCE_DIR=%CD%"
 
-REM Check if running from a mapped drive (e.g., Y:\)
+REM Detect if running from a mapped drive (e.g., Y:\)
 ECHO %SOURCE_DIR% | FINDSTR /R "^[A-Z]:\\" >NUL
 IF %ERRORLEVEL%==0 (
-    REM Use PowerShell to resolve the UNC path
-    FOR /F "usebackq tokens=*" %%I IN (`powershell -Command "& {(Get-PSDrive | Where-Object { $_.Name -eq '%SOURCE_DIR:~0,1%' }).Root}"`) DO SET "UNC_PATH=%%I"
+    REM Extract drive letter (e.g., Y:)
+    SET "DRIVE_LETTER=%SOURCE_DIR:~0,2%"
 
-    REM If PowerShell returned a UNC path, use it instead
-    IF NOT "!UNC_PATH!"=="" SET "SOURCE_DIR=!UNC_PATH!!SOURCE_DIR:~2!"
+    REM Use NET USE to get the UNC path
+    FOR /F "tokens=3" %%I IN ('net use ^| findstr /I "%DRIVE_LETTER%"') DO SET "UNC_PATH=%%I"
+
+    REM If UNC_PATH is found, replace drive letter in SOURCE_DIR with UNC path
+    IF NOT "!UNC_PATH!"=="" (
+        SET "SOURCE_DIR=!UNC_PATH!!SOURCE_DIR:~2!"
+    )
 )
 
 ECHO Using source directory: "%SOURCE_DIR%"
 
-REM Verify the corrected directory exists
+REM Verify that the corrected directory exists
 IF NOT EXIST "%SOURCE_DIR%" (
     ECHO ERROR: The specified directory does not exist: "%SOURCE_DIR%"
     EXIT /B 1
