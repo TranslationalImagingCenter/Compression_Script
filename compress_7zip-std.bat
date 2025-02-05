@@ -1,20 +1,30 @@
 @echo off
+@echo off
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM Path to 7-Zip ZS executable
 SET "7ZIP_PATH=C:\Program Files\7-Zip-Zstandard\7z.exe"
 
-REM Use the current directory as the source directory
 REM Get the current directory
 SET "SOURCE_DIR=%CD%"
 
-REM Check if SOURCE_DIR is a mapped drive (Y:\folder\file format)
+REM Check if running from a mapped drive (e.g., Y:\)
 ECHO %SOURCE_DIR% | FINDSTR /R "^[A-Z]:\\" >NUL
 IF %ERRORLEVEL%==0 (
-    FOR /F "tokens=2 delims==" %%I IN ('wmic logicaldisk where "DeviceID='%SOURCE_DIR:~0,2%'" get ProviderName /VALUE 2^>NUL') DO SET "SOURCE_DIR=%%I%SOURCE_DIR:~2%"
+    REM Use PowerShell to resolve the UNC path
+    FOR /F "usebackq tokens=*" %%I IN (`powershell -Command "& {(Get-PSDrive | Where-Object { $_.Name -eq '%SOURCE_DIR:~0,1%' }).Root}"`) DO SET "UNC_PATH=%%I"
+
+    REM If PowerShell returned a UNC path, use it instead
+    IF NOT "!UNC_PATH!"=="" SET "SOURCE_DIR=!UNC_PATH!!SOURCE_DIR:~2!"
 )
 
 ECHO Using source directory: "%SOURCE_DIR%"
+
+REM Verify the corrected directory exists
+IF NOT EXIST "%SOURCE_DIR%" (
+    ECHO ERROR: The specified directory does not exist: "%SOURCE_DIR%"
+    EXIT /B 1
+)
 
 REM Compression method and level
 SET "COMPRESSION_METHOD=zstd"
