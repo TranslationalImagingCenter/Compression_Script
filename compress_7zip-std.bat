@@ -100,7 +100,7 @@ for /R "%SOURCE_DIR%" %%F in (*) do (
     IF "!SKIP!"=="0" (
         SET "FILE_NAME=%%~nF"
         SET "FILE_DIR=%%~dpF"
-        SET "ZSTD_FILE=%%~dpnF.zst"
+        SET "ZSTD_FILE=%%~dpnxF.zst"  REM Preserve original file extension in compressed filename
 
         REM If a compressed file exists, verify and handle duplicates
         IF EXIST "!ZSTD_FILE!" (

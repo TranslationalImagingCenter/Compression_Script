@@ -56,13 +56,12 @@ if [[ "$USER_INPUT" != "Y" && "$USER_INPUT" != "y" ]]; then
     exit 0
 fi
 
-
-
 # Recursively loop through all files
 find "$SOURCE_DIR" -type f | while read -r FILE; do
     # Get file extension and filename
     EXT="${FILE##*.}"
     BASENAME="$(basename "$FILE")"
+    FILE_WITHOUT_EXT="${FILE%.*}"
 
     # Skip script itself and log file
     if [[ "$BASENAME" == "$SCRIPT_NAME" || "$BASENAME" == "$LOG_FILE" ]]; then
@@ -78,7 +77,7 @@ find "$SOURCE_DIR" -type f | while read -r FILE; do
         fi
     done
 
-    # Define compressed file path
+    # Define compressed file path with original extension
     COMPRESSED_FILE="${FILE}.zst"
 
     # If a compressed file already exists, verify and delete original if valid
@@ -93,7 +92,7 @@ find "$SOURCE_DIR" -type f | while read -r FILE; do
             echo "ERROR: Checksum mismatch for $COMPRESSED_FILE. Keeping original file: $FILE" | tee -a "$LOG_FILE"
         fi
     else
-        # Compress file
+        # Compress file while preserving original extension
         zstd -$COMPRESSION_LEVEL "$FILE" -o "$COMPRESSED_FILE"
         if [[ $? -eq 0 ]]; then
             # Verify compression by checking checksums
