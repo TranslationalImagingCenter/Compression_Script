@@ -5,7 +5,16 @@ REM Path to 7-Zip ZS executable
 SET "7ZIP_PATH=C:\Program Files\7-Zip-Zstandard\7z.exe"
 
 REM Use the current directory as the source directory
+REM Get the current directory
 SET "SOURCE_DIR=%CD%"
+
+REM Check if SOURCE_DIR is a mapped drive (Y:\folder\file format)
+ECHO %SOURCE_DIR% | FINDSTR /R "^[A-Z]:\\" >NUL
+IF %ERRORLEVEL%==0 (
+    FOR /F "tokens=2 delims==" %%I IN ('wmic logicaldisk where "DeviceID='%SOURCE_DIR:~0,2%'" get ProviderName /VALUE 2^>NUL') DO SET "SOURCE_DIR=%%I%SOURCE_DIR:~2%"
+)
+
+ECHO Using source directory: "%SOURCE_DIR%"
 
 REM Compression method and level
 SET "COMPRESSION_METHOD=zstd"
