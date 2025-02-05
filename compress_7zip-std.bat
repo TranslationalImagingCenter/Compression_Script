@@ -7,28 +7,31 @@ SET "7ZIP_PATH=C:\Program Files\7-Zip-Zstandard\7z.exe"
 REM Get the current directory
 SET "SOURCE_DIR=%CD%"
 
-REM Detect if running from a mapped drive (e.g., Y:\)
+REM Detect if running from a mapped network drive (e.g., Y:\)
 ECHO %SOURCE_DIR% | FINDSTR /R "^[A-Z]:\\" >NUL
 IF %ERRORLEVEL%==0 (
     REM Extract drive letter (e.g., Y:)
     SET "DRIVE_LETTER=%SOURCE_DIR:~0,2%"
 
-    REM Use NET USE to get the UNC path
-    FOR /F "tokens=3" %%I IN ('net use ^| findstr /I "%DRIVE_LETTER%"') DO SET "UNC_PATH=%%I"
+    REM Use NET USE to get the UNC path of the mapped drive
+    FOR /F "tokens=2 delims= " %%I IN ('net use ^| findstr /I "%DRIVE_LETTER%"') DO SET "UNC_PATH=%%I"
 
-    REM If UNC_PATH is found, replace drive letter in SOURCE_DIR with UNC path
+    REM If a valid UNC path is found, replace the mapped drive with the UNC path
     IF NOT "!UNC_PATH!"=="" (
         SET "SOURCE_DIR=!UNC_PATH!!SOURCE_DIR:~2!"
     )
 )
 
+ECHO ================================================
 ECHO Using source directory: "%SOURCE_DIR%"
+ECHO ================================================
 
-REM Verify that the corrected directory exists
+REM Verify the corrected directory exists
 IF NOT EXIST "%SOURCE_DIR%" (
     ECHO ERROR: The specified directory does not exist: "%SOURCE_DIR%"
     EXIT /B 1
 )
+
 
 REM Compression method and level
 SET "COMPRESSION_METHOD=zstd"
@@ -51,7 +54,8 @@ REM Compressed file extensions to skip
 SET "SKIP_EXTENSIONS=.zst .7z .zip .rar .gz .tgz .bz2 .xz .tar .lz4 .cab .arj .iso .dmg .pkg .deb .rpm"
 
 REM Description of the script
-CLS
+
+
 echo ============================================
 echo "7-Zip Zstandard Compression Script"
 echo ============================================
