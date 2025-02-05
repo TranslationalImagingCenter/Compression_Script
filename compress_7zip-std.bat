@@ -1,6 +1,14 @@
 @echo off
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
+REM Check if 7-Zip Zstandard exists
+IF NOT EXIST "C:\Program Files\7-Zip-Zstandard\7z.exe" (
+    ECHO ERROR: 7-Zip Zstandard is not installed or the path is incorrect.
+    ECHO Please install it from: https://github.com/mcmilk/7-Zip-zstd/releases
+    PAUSE
+    EXIT /B 1
+)
+
 REM Path to 7-Zip ZS executable
 SET "7ZIP_PATH=C:\Program Files\7-Zip-Zstandard\7z.exe"
 
